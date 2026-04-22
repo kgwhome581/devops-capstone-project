@@ -1,3 +1,7 @@
+# devops-capstone-project
+
+#This is the capstone project for the DevOps Engineer Professional Certificate. It involves building, testing, and deploying a customer accounts microservice using CI/CD pipelines, Docker, and Kubernetes.
+
 # DevOps Capstone Template
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
