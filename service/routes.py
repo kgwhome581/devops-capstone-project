@@ -1,27 +1,20 @@
 """
 Account Service
-
 This microservice handles the lifecycle of Accounts
 """
-# pylint: disable=unused-import
-from flask import jsonify, request, make_response, abort, url_for   # noqa; F401
+import os
+from flask import jsonify, request, make_response, abort
 from service.models import Account
 from service.common import status  # HTTP Status Codes
 from . import app  # Import Flask application
 
 
-############################################################
-# Health Endpoint
-############################################################
 @app.route("/health")
 def health():
     """Health Status"""
     return jsonify(dict(status="OK")), status.HTTP_200_OK
 
 
-######################################################################
-# GET INDEX
-######################################################################
 @app.route("/")
 def index():
     """Root URL response"""
@@ -29,77 +22,34 @@ def index():
         jsonify(
             name="Account REST API Service",
             version="1.0",
-            # paths=url_for("list_accounts", _external=True),
         ),
         status.HTTP_200_OK,
     )
 
 
-######################################################################
-# CREATE A NEW ACCOUNT
-######################################################################
 @app.route("/accounts", methods=["POST"])
 def create_accounts():
-    """
-    Creates an Account
-    This endpoint will create an Account based the data in the body that is posted
-    """
+    """Creates an Account"""
     app.logger.info("Request to create an Account")
     check_content_type("application/json")
     account = Account()
     account.deserialize(request.get_json())
     account.create()
     message = account.serialize()
-    # Uncomment once get_accounts has been implemented
-    # location_url = url_for("get_accounts", account_id=account.id, _external=True)
-    location_url = "/"  # Remove once get_accounts has been implemented
+    location_url = "/"  # Placeholder
     return make_response(
         jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
     )
 
-######################################################################
-# LIST ALL ACCOUNTS
-######################################################################
 
-# ... place you code here to LIST accounts ...
-
-
-######################################################################
-# READ AN ACCOUNT
-######################################################################
-
-app.route("/accounts/<int:account_id>", methods=["GET"])
+@app.route("/accounts/<int:account_id>", methods=["GET"])
 def get_accounts(account_id):
-    """
-    Reads an Account
-    This endpoint will read an Account based the account_id that is requested
-    """
+    """Reads an Account"""
     app.logger.info("Request to read an Account with id: %s", account_id)
-
     account = Account.find(account_id)
     if not account:
-        abort(status.HTTP_404_NOT_FOUND, f"Account with id [{account_id}] could not be found.")
-
-    return account.serialize(), status.HTTP_200_OK
-
-
-######################################################################
-# UPDATE AN EXISTING ACCOUNT
-######################################################################
-
-# ... place you code here to UPDATE an account ...
-
-
-######################################################################
-# DELETE AN ACCOUNT
-######################################################################
-
-# ... place you code here to DELETE an account ...
-
-
-######################################################################
-#  U T I L I T Y   F U N C T I O N S
-######################################################################
+        abort(status.HTTP_404_NOT_FOUND, f"Account with id [{account_id}] not found.")
+    return make_response(jsonify(account.serialize()), status.HTTP_200_OK)
 
 
 def check_content_type(media_type):
@@ -112,3 +62,4 @@ def check_content_type(media_type):
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
         f"Content-Type must be {media_type}",
     )
+    
