@@ -1,4 +1,5 @@
-# devops-capstone-project
+
+![Build Status](https://github.com/kgwhome581/devops-capstone-project/actions/workflows/ci-build.yaml/badge.svg)# devops-capstone-project
 
 #This is the capstone project for the DevOps Engineer Professional Certificate. It involves building, testing, and deploying a customer accounts microservice using CI/CD pipelines, Docker, and Kubernetes.
 
