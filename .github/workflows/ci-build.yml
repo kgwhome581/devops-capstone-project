@@ -2,43 +2,49 @@ name: CI Build
 
 on:
   push:
-    branches: [ "master", "main" ]
+    branches: [ "main", "master" ]
   pull_request:
-    branches: [ "master", "main" ]
+    branches: [ "main", "master" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: python:3.9-slim
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        # Ждем, пока postgres станет доступен
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
-      # 1. Шаг для Checkout (извлечение кода)
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Установка Python
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-
-      # 3. Установка зависимостей
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install flake8 pylint nose coverage
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      # 4. Шаг для Линтинга (после Checkout)
       - name: Lint with flake8
-        run: |
-          # Останавливает сборку при синтаксических ошибках
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
       - name: Lint with pylint
-        run: |
-          pylint service
+        run: pylint service tests
 
-      # 5. Шаг для запуска Unit тестов (после Линтинга)
       - name: Run unit tests with nosetests
-        run: |
-          nosetests --with-spec --spec-color --with-coverage --cover-package=service
+        env:
+          DATABASE_URI: postgresql://postgres:password@postgres:5432/testdb
+        run: nosetests -v --with-spec --spec-color --with-coverage --cover-package=service
